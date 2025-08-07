@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>🌍 Simulasi Ekonomi Pembangunan</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to bottom, #e0f7fa, #e8f5e9);
+      text-align: center;
+      padding: 20px;
+    }
+    .game-container {
+      max-width: 750px;
+      margin: auto;
+      background: white;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    h1 {
+      color: #2e7d32;
+    }
+    #choices button {
+      display: block;
+      margin: 10px auto;
+      padding: 15px;
+      width: 90%;
+      background: #4caf50;
+      border: none;
+      color: white;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    #choices button:hover {
+      background: #388e3c;
+    }
+    #status {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+    .indicator {
+      margin: 5px 0;
+    }
+    .emoji {
+      font-size: 24px;
+      margin-left: 5px;
+    }
+    #next-btn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #1e88e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #next-btn:hover {
+      background: #1565c0;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <h1>🌍 Simulasi Ekonomi Pembangunan</h1>
+    <p><strong>Peranmu: Pemimpin Negara Berkembang</strong></p>
+
+    <div id="question-container">
+      <p id="question">Memuat pertanyaan...</p>
+      <div id="choices"></div>
+    </div>
+
+    <div id="status">
+      <p class="indicator">📈 Pertumbuhan Ekonomi: <span id="growth">50</span></p>
+      <p class="indicator">⚖️ Pemerataan Pendapatan: <span id="equality">50</span></p>
+      <p class="indicator">💚 Kualitas Hidup: <span id="quality">50</span></p>
+      <p class="indicator">🔥 Inflasi: <span id="inflation">10</span></p>
+      <p class="indicator">🌾 Ketahanan Pangan: <span id="food">50</span></p>
+    </div>
+
+    <button id="next-btn">Pertanyaan Selanjutnya</button>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        question: "Tingkat kemiskinan meningkat drastis. Apa yang kamu lakukan?",
+        choices: [
+          { text: "Program padat karya nasional", growth: +10, equality: +15, quality: +10, inflation: +2, food: +5 },
+          { text: "Subsidi sembako besar-besaran", growth: +0, equality: +20, quality: +15, inflation: +8, food: +10 },
+          { text: "Undang investor membangun pabrik", growth: +20, equality: +5, quality: +5, inflation: 0, food: 0 }
+        ]
+      },
+      {
+        question: "Negaramu dilanda krisis pangan global. Tindakanmu?",
+        choices: [
+          { text: "Bangun lumbung pangan nasional", growth: +5, equality: +5, quality: +5, inflation: -5, food: +20 },
+          { text: "Impor besar-besaran", growth: +5, equality: 0, quality: 0, inflation: +10, food: +10 },
+          { text: "Biarkan harga menyesuaikan pasar", growth: 0, equality: -10, quality: -10, inflation: +15, food: -5 }
+        ]
+      },
+      {
+        question: "Demo besar terjadi karena ketimpangan makin parah!",
+        choices: [
+          { text: "Reformasi pajak progresif", growth: -5, equality: +20, quality: +15, inflation: 0, food: 0 },
+          { text: "Berikan bansos tunai langsung", growth: +0, equality: +10, quality: +10, inflation: +5, food: 0 },
+          { text: "Tangani keamanan dan stabilkan kondisi", growth: +5, equality: -10, quality: -5, inflation: 0, food: 0 }
+        ]
+      },
+      {
+        question: "Ekonomi tumbuh, tapi lingkungan rusak. Tindakanmu?",
+        choices: [
+          { text: "Alihkan ke ekonomi hijau & energi terbarukan", growth: +5, equality: +5, quality: +10, inflation: -2, food: +5 },
+          { text: "Lanjutkan industri meskipun polusi naik", growth: +15, equality: -5, quality: -10, inflation: +3, food: -5 },
+          { text: "Moratorium industri batu bara", growth: -5, equality: +10, quality: +20, inflation: -3, food: +10 }
+        ]
+      }
+    ];
+
+    const events = [
+      { text: "💥 Terjadi bencana alam besar! Infrastruktur hancur.", effect: () => {
+        growth -= 10; quality -= 10; food -= 10;
+        alert("Event: Bencana Alam! 📉 Infrastruktur rusak.");
+      }},
+      { text: "🌎 Harga minyak dunia naik tajam!", effect: () => {
+        inflation += 10; quality -= 5;
+        alert("Event: Harga Minyak Naik! 💸 Biaya hidup naik.");
+      }},
+      { text: "🕊️ Bantuan luar negeri datang!", effect: () => {
+        growth += 10; equality += 5; food += 5;
+        alert("Event: Bantuan Luar Negeri! 🌟");
+      }}
+    ];
+
+    let currentQuestion = 0;
+    let growth = 50;
+    let equality = 50;
+    let quality = 50;
+    let inflation = 10;
+    let food = 50;
+
+    const questionEl = document.getElementById("question");
+    const choicesEl = document.getElementById("choices");
+    const nextBtn = document.getElementById("next-btn");
+
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      questionEl.textContent = q.question;
+      choicesEl.innerHTML = "";
+      q.choices.forEach(choice => {
+        const btn = document.createElement("button");
+        btn.textContent = choice.text;
+        btn.onclick = () => selectChoice(choice);
+        choicesEl.appendChild(btn);
+      });
+    }
+
+    function selectChoice(choice) {
+      growth += choice.growth;
+      equality += choice.equality;
+      quality += choice.quality;
+      inflation += choice.inflation;
+      food += choice.food;
+      updateStatus();
+      if (Math.random() < 0.4) triggerRandomEvent();
+      nextBtn.style.display = "block";
+      choicesEl.innerHTML = "";
+    }
+
+    function updateStatus() {
+      document.getElementById("growth").textContent = growth;
+      document.getElementById("equality").textContent = equality;
+      document.getElementById("quality").textContent = quality;
+      document.getElementById("inflation").textContent = inflation;
+      document.getElementById("food").textContent = food;
+    }
+
+    function triggerRandomEvent() {
+      const e = events[Math.floor(Math.random() * events.length)];
+      e.effect();
+      updateStatus();
+    }
+
+    nextBtn.onclick = () => {
+      currentQuestion++;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+        nextBtn.style.display = "none";
+      } else {
+        showEnding();
+      }
+    };
+
+    function showEnding() {
+      questionEl.textContent = "🏁 Permainan Selesai! Ini hasil kebijakanmu:";
+      choicesEl.innerHTML = `
+        <p><strong>📊 Skor Akhir:</strong></p>
+        <ul style="text-align: left;">
+          <li>Pertumbuhan Ekonomi: ${growth}</li>
+          <li>Pemerataan Pendapatan: ${equality}</li>
+          <li>Kualitas Hidup: ${quality}</li>
+          <li>Inflasi: ${inflation}</li>
+          <li>Ketahanan Pangan: ${food}</li>
+        </ul>
+        <p><strong>${
+          quality > 80 && equality > 80
+            ? "🎉 Rakyat bahagia, pembangunan berkelanjutan!"
+            : inflation > 50
+            ? "⚠️ Rakyat gelisah karena inflasi tinggi!"
+            : "💡 Perlu evaluasi ulang strategi pembangunanmu."
+        }</strong></p>
+      `;
+      nextBtn.style.display = "none";
+    }
+
+    showQuestion();
+    updateStatus();
+  </script>
+</body>
+</html>
